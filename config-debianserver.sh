@@ -93,7 +93,10 @@ ConfPessoal(){
 """ > /etc/issue
     # Hostname
     echo debian-modelo > /etc/hostname
-    #
+    # Interfaces
+    mv -f ./config/interfaces /etc/network/interfaces
+    # Hosts
+    
 }
 #----------------------------------------------------------------------------------#
 Inicio(){

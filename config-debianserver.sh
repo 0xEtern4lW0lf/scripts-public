@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #!/usr/bin/env sh
 
 #####   NOME:               config-debianserver.sh

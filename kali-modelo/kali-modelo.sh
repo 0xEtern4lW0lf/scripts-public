@@ -12,7 +12,6 @@
 
 #======================================= VARIABLE =========================================#
 _PROGRAMS=( tilix flameshot )
-_PASS=$(zenity --password --title "Nova senha do kali")
 #======================================== FUNCION =========================================#
 # Verifica o usuário
 CheckUser(){
@@ -27,13 +26,33 @@ CheckUser(){
     fi
 }
 #------------------------------------------------------------------------------------------#
+NewPass(){
+	while true; do
+        _NEWPASS=$(zenity --forms --add-password="Senha" --title "Login KALI" --text "Digite a nova senha")
+        _NEWPASS2=$(zenity --forms --add-password="Senha" --title "Login KALI" --text "Redigite a nova senha")
+
+        if [ "$_NEWPASS" != "$_NEWPASS2" ]; then
+            zenity --error --text "As novas senhas nao conferem." --title "Login KALI" --width=200
+            continue
+        fi
+
+        # Checa se senha esta vazia
+        if [ -z "$_NEWPASS" ]; then
+            # Senha vazia
+            zenity --error --text "A senha nao pode estar em branco." --title "Login KALI" --width=200
+        else
+            echo "$_NEWPASS"
+            break
+        fi
+    done
+}
 ConfUser(){
-    echo "kali:$PASS" | chpasswd
+    echo 'kali:$(NewPass)' | chpasswd
 }
 #------------------------------------------------------------------------------------------#
 SetPath(){
-  echo -e "\n\n### PATH PESSOAL"
-  echo -e "PATH=/usr/local/bin/etern4lw0lf:$PATH" >> /etc/zsh/zsh
+  echo -e "\n\n### PATH PESSOAL" >> /etc/zsh/zshenv
+  echo -e "PATH=/usr/local/bin/etern4lw0lf:$PATH" >> /etc/zsh/zshenv
 }
 #------------------------------------------------------------------------------------------#
 LocalScripts(){

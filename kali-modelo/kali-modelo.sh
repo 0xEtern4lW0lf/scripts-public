@@ -42,26 +42,31 @@ LocalScripts(){
   chmod -R 755 /usr/local/bin/etern4lw0lf
 }
 #------------------------------------------------------------------------------------------#
-Update(){
-  add-apt-repository ppa:webupd8team/terminix
+Update(){  
   /usr/local/bin/etern4lw0lf/etern4lw0lf-upd.sh
 }
 #------------------------------------------------------------------------------------------#
 # Instala os programas
 InstallPrograms(){
-    sudo apt update >/dev/null 2>&1
+	add-apt-repository ppa:webupd8team/terminix
+	apt update >/dev/null 2>&1
 
-    for program in ${_PROGRAMS[*]}; do
-        echo -e "\n[*] Instalando o ${program}..."
-        sudo apt install -fy ${program}
-        [ $? -eq 0 ] && echo -e "\n[O] Instalado com sucesso!" ||
-        echo -e "\n[X] ERROR!"
-    done
+	for program in ${_PROGRAMS[*]}; do
+		echo -e "\n[*] Instalando o ${program}..."
+		apt install -fy ${program}
+		[ $? -eq 0 ] && echo -e "\n[O] Instalado com sucesso!" ||
+		echo -e "\n[X] ERROR!"
+	done
+}
+#------------------------------------------------------------------------------------------#
+ConfPersonal(){
+	ln -sf /dev/null /home/kali/.zsh_history
+	ln -sf /dev/null /root/.zsh_history
 }
 #======================================= EXECUTION ========================================#
 CheckUser
 #------------------------------------------------------------------------------------------#
-ConfUser; SetPath; LocalScripts
+ConfUser; SetPath; LocalScripts; ConfPersonal
 #------------------------------------------------------------------------------------------#
 Update
 #------------------------------------------------------------------------------------------#

@@ -1,11 +1,11 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 #####   NOME:               config-debianserver.sh
 #####   VERSÃO:             1.0
 #####   DESCRIÇÃO:          Configura um Debian Server Modelo.
 #####   DATA DA CRIAÇÃO:    14/05/2022
 #####   ESCRITO POR:        Ramon MARSAl Penha de Souza
-#####   E-MAIL:             ramonmarsal1997@gmail.com
+#####   E-MAIL:             ramonmarsal.tech@gmail.com
 
 ########################## IMPORTANTE: Executar como root ##########################
 
@@ -109,13 +109,13 @@ ConfProgram(){
     # PSAD
     sed -i 's/_CHANGEME_/debian-modelo/' etc/psad/psad.conf
     # ZABBIX AGENT
-    sed -i 's/Server=127.0.0.1/Server=192.168.56.4/' /etc/zabbix/zabbix_agentd.conf
-    sed -i 's/ServerActive=127.0.0.1/ServerActive=192.168.56.4/' /etc/zabbix/zabbix_agentd.conf
+ #   sed -i 's/Server=127.0.0.1/Server=192.168.56.4/' /etc/zabbix/zabbix_agentd.conf
+ #   sed -i 's/ServerActive=127.0.0.1/ServerActive=192.168.56.4/' /etc/zabbix/zabbix_agentd.conf
     # Rsyslog
     sed -i 's/#module(load="imudp")/module(load="imudp")/' /etc/rsyslog.conf
     sed -i 's/#input(type="imudp" port="514")/input(type="imudp" port="514")/' /etc/rsyslog.conf
     echo -e "\n\n#### PERSONAL RULES ####" >> /etc/rsyslog.conf
-    echo -e "\n*.* @192.168.56.5:514" >> /etc/rsyslog.conf
+#    echo -e "\n*.* @192.168.56.5:514" >> /etc/rsyslog.conf
     echo -e '\n$ActionQueueFileName queue' >> /etc/rsyslog.conf
     echo -e '$ActionQueueMaxDiskSpace 2g' >> /etc/rsyslog.conf
     echo -e '$ActionQueueSaveonShutdown on' >> /etc/rsyslog.conf

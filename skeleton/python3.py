@@ -7,6 +7,8 @@
 ## ========= MODULES =========
 
 import argparse
+import sys
+import time
 import requests
 import socket
 import telnetlib
@@ -67,15 +69,29 @@ def banner():
   """
   return print(f'{BLUE}{EwLogo}{END}')
 
+# Pretty loading wheel
+def loading(spins):
 
+    def spinning_cursor():
+        while True:
+            for cursor in '|/-\\':
+                yield cursor
+
+    spinner = spinning_cursor()
+    for _ in range(spins):
+        sys.stdout.write(next(spinner))
+        sys.stdout.flush()
+        time.sleep(0.1)
+        sys.stdout.write('\b')
 
 def main():
     # Parse Arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--target', help='Target ip address or hostname', required=True)
-    args = parser.parse_args()
+#    parser = argparse.ArgumentParser()
+#    parser.add_argument('-t', '--target', help='Target ip address or hostname', required=True)
+#    args = parser.parse_args()
     
     '''Here we call the functions'''
+    loading(15)
     
 if __name__ == '__main__':
     banner()

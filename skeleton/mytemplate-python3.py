@@ -180,6 +180,7 @@ def main():
     getShell(rhost,payload)
     loading(3)
 
+#### ======= EXECUTION =======
 
 if __name__ == '__main__':
     banner()

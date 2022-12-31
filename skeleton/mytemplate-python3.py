@@ -149,8 +149,8 @@ def getShell(rhost,payload):
 def main():
     # Parse Arguments
     parser = argparse.ArgumentParser(description='HackTheBox TEMPLATE AutoShell - 0xEtern4lW0lf')
-    parser.add_argument('-t', '--target', help='Target ip address or hostname', required=True)
-    parser.add_argument('-li', '--localip', help='Local ip address or hostname', required=True)
+    parser.add_argument('-t', '--target', help='Target IP address or Hostname', required=True)
+    parser.add_argument('-li', '--localip', help='Local IP address or Hostname', required=True)
     parser.add_argument('-lp', '--localport', help='Local port to receive the shell', required=True)
 
     args = parser.parse_args()

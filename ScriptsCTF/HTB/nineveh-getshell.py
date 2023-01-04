@@ -3,7 +3,7 @@
 #### Title: Exploit Phpliteadmin 1.9.3 - Remote PHP Code Injection and Local File Inclusion (LFI)
 #### Description: GetShell - Nineveh - HTB
 #### Author: 0xEtern4lW0lf
-#### Created: 26 Dez 2022
+#### Created: 03 Jan 2023
 
 #### ========= MODULES =========
 

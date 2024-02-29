@@ -16,7 +16,7 @@ openssh-server
 net-tools
 fail2ban
 psad
-zabbix-agent
+#zabbix-agent
 rsyslog
 rsync
 nload
@@ -24,10 +24,11 @@ htop
 screen
 screenfetch
 rkhunter
-bind9 bind9utils dnsutils #DNS
-isc-dhcp-server #DHCP
-apache2 mariadb-server #WWW
+#bind9 bind9utils dnsutils #DNS
+#isc-dhcp-server #DHCP
+#apache2 mariadb-server #WWW
 )
+NAMEHOST="debian-padrao"
 #==================================================================================#
 ##### FUNÇOES #####
 # Verifica o usuário
@@ -73,9 +74,9 @@ AptFix(){
 ConfPessoal(){
   # Bashrc personalizado
   for i in $(ls /home); do
-  mv -f ./config/bashrc/user-bashrc /home/$i/.bashrc
+  mv -f ./user-bashrc /home/$i/.bashrc
   done
-  mv -f ./config/bashrc/root-bashrc /root/.bashrc
+  mv -f ./root-bashrc /root/.bashrc
   # Banner personalizado
   echo -e """
  
@@ -91,11 +92,11 @@ ConfPessoal(){
 
 """ > /etc/issue
     # Hostname
-    echo debian-modelo > /etc/hostname
+    echo $NAMEHOST > /etc/hostname
     # Interfaces
-    mv -f ./config/interfaces /etc/network/interfaces
+    mv -f ./interfaces /etc/network/interfaces
     # Hosts
-    mv -f ./config/hosts /etc/hosts
+    mv -f ./hosts /etc/hosts
     # Resolv.conf
     echo -e "nameserver 8.8.8.8 \nnameserver8.8.4.4"
 }
@@ -107,7 +108,7 @@ ConfProgram(){
     echo -e "findtime = 10m/g" >> /etc/fail2ban/jail.d/pessoal.conf
     echo -e "maxretry = 3" >> /etc/fail2ban/jail.d/pessoal.conf
     # PSAD
-    sed -i 's/_CHANGEME_/debian-modelo/' etc/psad/psad.conf
+    sed -i 's/_CHANGEME_/$NAMEHOST/' /etc/psad/psad.conf
     # ZABBIX AGENT
  #   sed -i 's/Server=127.0.0.1/Server=192.168.56.4/' /etc/zabbix/zabbix_agentd.conf
  #   sed -i 's/ServerActive=127.0.0.1/ServerActive=192.168.56.4/' /etc/zabbix/zabbix_agentd.conf
